@@ -15,11 +15,12 @@ def main() -> None:
 
     args = parse_args()
     source = args['camera']
-
+    lower = args['lower_hsv']
+    upper = args['upper_hsv']
 
     cap = VideoCapture(source)
 
-    model = HSVDetector(lower_hsv = (29, 86, 6), upper_hsv = (64, 255, 255))
+    model = HSVDetector(lower_hsv = lower, upper_hsv = upper)
 
     window_name = 'HSV Detection'
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
