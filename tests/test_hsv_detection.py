@@ -1,9 +1,10 @@
+# tests/test_hsv_detection.py
+
 import logging
 import cv2
 
-from ulits.utils import parse_args
-from modules.video_capture import VideoCapture
-from modules.detection import HSVDetector
+from ulits import parse_args
+from modules import VideoCapture, HSVDetector
 
 
 def main() -> None:
