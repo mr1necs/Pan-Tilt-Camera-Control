@@ -138,8 +138,8 @@ class YOLODetector:
                 name = self.model.names.get(cls_id, str(cls_id))
                 if self.class_filter and name not in self.class_filter:
                     continue
-                coords = tuple(box.xyxy.cpu().numpy().tolist())
-                boxes.append(coords)
+                coords = box.xyxy.cpu().numpy().reshape(-1).tolist()
+                boxes.append(tuple(coords))
         return boxes
 
     @staticmethod
@@ -152,7 +152,7 @@ class YOLODetector:
         :return: Annotated image.
         """
         annotated = frame.copy()
-        for (x1, y1, x2, y2) in boxes:
+        for x1, y1, x2, y2  in boxes:
             x1_i, y1_i, x2_i, y2_i = map(int, (x1, y1, x2, y2))
             cv2.rectangle(annotated, (x1_i, y1_i), (x2_i, y2_i), (0, 255, 0), 2)
         return annotated
