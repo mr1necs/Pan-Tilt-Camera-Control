@@ -19,7 +19,7 @@ def main() -> None:
 
 
     cap = VideoCapture(source)
-    model = YOLODetector(model_path='src/yolo11n.pt', device=device)
+    model = YOLODetector(model_path='../models/yolo11n.pt', device=device)
     model.set_class_filter(['frisbee', 'sports ball', 'apple', 'orange', 'cake', 'clock'])
 
     window_name = 'YOLO Detection'
