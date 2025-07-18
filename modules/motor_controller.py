@@ -1,5 +1,4 @@
 # modules/motor_controller.py
-
 import logging
 import threading
 from typing import Sequence, Tuple
@@ -42,6 +41,7 @@ class MotorController:
         """
         logging_setup()
 
+        # Unpack pin configurations into attributes
         self.pan_dir_pin, self.pan_step_pin, self.pan_en_pin = pan_pins
         self.tilt_dir_pin, self.tilt_step_pin, self.tilt_en_pin = tilt_pins
 
@@ -57,44 +57,83 @@ class MotorController:
             self.tilt_dir_pin, self.tilt_step_pin, microstep_pins, "DRV8825"
         )
 
-        # Configure GPIO
+        # Configure GPIO for enable pins
         GPIO.setmode(GPIO.BCM)
         GPIO.setup(self.pan_en_pin, GPIO.OUT)
         GPIO.setup(self.tilt_en_pin, GPIO.OUT)
+        logging.info(
+            "GPIO configured: pan_en=%s, tilt_en=%s",
+            self.pan_en_pin, self.tilt_en_pin
+        )
 
     def enable_motors(self) -> None:
         """Enable both stepper motors by setting their enable pins low."""
         GPIO.output(self.pan_en_pin, GPIO.LOW)
         GPIO.output(self.tilt_en_pin, GPIO.LOW)
+        logging.info("Motors enabled")
 
     def disable_motors(self) -> None:
         """Disable both stepper motors by setting their enable pins high."""
         GPIO.output(self.pan_en_pin, GPIO.HIGH)
         GPIO.output(self.tilt_en_pin, GPIO.HIGH)
+        logging.info("Motors disabled")
 
-    def move(self, clockwise: bool, steps: int) -> None:
+    def move(
+        self,
+        pan_clockwise: bool,
+        tilt_clockwise: bool,
+        pan_steps: int,
+        tilt_steps: int,
+    ) -> None:
         """
-        Move both pan and tilt motors concurrently.
+        Move pan and tilt motors concurrently with independent directions and steps.
 
-        :param clockwise: Direction flag; True for clockwise, False for counterclockwise.
-        :param steps: Number of steps to move each motor.
+        :param pan_clockwise: Direction for pan motor; True for clockwise.
+        :param tilt_clockwise: Direction for tilt motor; True for clockwise.
+        :param pan_steps: Number of steps for pan motor.
+        :param tilt_steps: Number of steps for tilt motor.
         """
         threads = []
-        for motor in (self.pan_motor, self.tilt_motor):
-            thread = threading.Thread(
-                target=self._move_motor,
-                args=(motor, clockwise, steps),
-                name="motor_thread_%s" % motor
-            )
-            threads.append(thread)
-            thread.start()
 
+        # Create thread for pan motor
+        pan_thread = threading.Thread(
+            target=self._move_motor,
+            args=(self.pan_motor, pan_clockwise, pan_steps),
+            name="pan_move"
+        )
+        threads.append(pan_thread)
+        pan_thread.start()
+        logging.info(
+            "Started pan thread %s: %d steps %s",
+            pan_thread.name, pan_steps, 'CW' if pan_clockwise else 'CCW'
+        )
+
+        # Create thread for tilt motor
+        tilt_thread = threading.Thread(
+            target=self._move_motor,
+            args=(self.tilt_motor, tilt_clockwise, tilt_steps),
+            name="tilt_move"
+        )
+        threads.append(tilt_thread)
+        tilt_thread.start()
+        logging.info(
+            "Started tilt thread %s: %d steps %s",
+            tilt_thread.name, tilt_steps, 'CW' if tilt_clockwise else 'CCW'
+        )
+
+        # Wait for both to finish
         for thread in threads:
             thread.join()
+            logging.info("Thread %s finished", thread.name)
 
-    def _move_motor(self, motor: RpiMotorLib.A4988Nema, clockwise: bool, steps: int) -> None:
+    def _move_motor(
+        self,
+        motor: RpiMotorLib.A4988Nema,
+        clockwise: bool,
+        steps: int,
+    ) -> None:
         """
-        Move a single motor with given direction and steps.
+        Move a single motor with given direction and number of steps.
 
         :param motor: Instance of A4988Nema motor to control.
         :param clockwise: True for clockwise movement, False otherwise.
@@ -108,7 +147,7 @@ class MotorController:
             verbose=False,
             initdelay=self.init_delay,
         )
-        direction = "clockwise" if clockwise else "counterclockwise"
+        direction = 'clockwise' if clockwise else 'counterclockwise'
         logging.info(
             "Motor %s moved %d steps %s",
             motor, steps, direction
