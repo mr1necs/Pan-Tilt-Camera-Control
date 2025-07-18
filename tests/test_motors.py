@@ -88,5 +88,5 @@ def main() -> None:
         logger.info("Cleanup complete")
 
 
-if __name__ == "__main__":  # pragma: no cover
+if __name__ == "__main__":
     main()
