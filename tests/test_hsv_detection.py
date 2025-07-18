@@ -20,7 +20,7 @@ def main() -> None:
 
     cap = VideoCapture(source)
 
-    model = HSVDetector(lower_hsv = lower, upper_hsv = upper)
+    model = HSVDetector(lower_hsv=lower, upper_hsv=upper)
 
     window_name = 'HSV Detection'
     cv2.namedWindow(window_name, cv2.WINDOW_NORMAL)
