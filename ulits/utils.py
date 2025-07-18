@@ -8,6 +8,8 @@ def parse_args() -> Dict[str, Union[str, int, None]]:
 
     :return: Dictionary of parsed arguments with keys:
              - device: computation device ('mps', 'cuda', or 'cpu')
+             - lower_hsv: optional lower HSV bound [H, S, V]
+             - upper_hsv: optional upper HSV bound [H, S, V]
              - camera: path to a video file or None to use the default camera
              - buffer: maximum buffer size for trajectory
              - timeout: number of frames before switching to full-image search
@@ -23,6 +25,22 @@ def parse_args() -> Dict[str, Union[str, int, None]]:
         choices=('mps', 'cuda', 'cpu'),
         default='mps',
         help="Computation device: 'mps', 'cuda', or 'cpu'."
+    )
+    parser.add_argument(
+        '-lh', '--lower-hsv',
+        type=int,
+        nargs=3,
+        metavar=('H', 'S', 'V'),
+        default=[29, 86, 6],
+        help="Lower HSV bound as three integers: H S V (0–255)."
+    )
+    parser.add_argument(
+        '-uh', '--upper-hsv',
+        type=int,
+        nargs=3,
+        metavar=('H', 'S', 'V'),
+        default=[64, 255, 255],
+        help="Upper HSV bound as three integers: H S V (0–255)."
     )
     parser.add_argument(
         '-c',
