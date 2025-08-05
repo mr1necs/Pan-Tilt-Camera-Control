@@ -7,14 +7,6 @@ import RPi.GPIO as GPIO
 from RpiMotorLib import RpiMotorLib
 
 
-def logging_setup() -> None:
-    """Configure the root logger to output at INFO level."""
-    logging.basicConfig(
-        level=logging.INFO,
-        format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-    )
-
-
 class MotorController:
     """
     Control pan and tilt stepper motors using A4988 drivers.
